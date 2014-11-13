@@ -32,10 +32,10 @@ xbeeAPI.on("frame_object", function(frame) {
     }
     else if (type == 0x90) {
         var payload = createHexString(frame["data"]);
-        var node = frame["remote16"];
+        var node    = String(frame["remote16"]);
         console.log("sensor:",node);
         console.log("says",payload);
-        pubnub.publish({channel:'' + node,message:{value:payload+''}});
+        pubnub.publish({channel:node,message:{value:payload}});
     }
 });
 
