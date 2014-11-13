@@ -35,7 +35,21 @@ xbeeAPI.on("frame_object", function(frame) {
         var node    = String(frame["remote16"]);
         console.log("sensor:",node);
         console.log("says",payload);
-        pubnub.publish({channel:node,message:{value:payload}});
+
+        // outbound stream
+        pubnub.publish({
+            channel: 'outbound',
+            message: {
+                node:    node,
+                payload: payload
+            }
+        });
+
+        // node specific stream (good for node-red)
+        pubnub.publish({
+            channel: 'node-' + node,
+            message: payload
+        });
     }
 });
 
