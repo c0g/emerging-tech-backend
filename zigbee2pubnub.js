@@ -29,6 +29,10 @@ xbeeAPI.on("frame_object", function(frame) {
     if (type == 0x97) {
         console.log("Address:",frame["remote16"]+' '+frame["remote64"]);
         network[frame["remote16"]] = frame["remote64"];
+        pubnub.publish({
+            channel: 'network_def',
+            message: network
+        })
     }
     else if (type == 0x90) {
         var payload = createHexString(frame["data"]);
