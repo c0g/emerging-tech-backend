@@ -80,7 +80,7 @@ pubnub.subscribe({
                 payload = message.payload,
                 action  = message.action;
             
-            if (node && payload) {
+            if (node && payload !== undefined) {
                 send_to_zbee(node, payload);
             }
             else if(message.action == 'network_status'){
