@@ -76,10 +76,18 @@ var send_to_zbee = function(node, payload) {
 pubnub.subscribe({
         channel  : "inbound",
         callback : function(message) {
-            var node = message["node"];
-            var payload = message["payload"];
+            var node    = message.node,
+                payload = message.payload,
+                action  = message.action;
+            
             if (node && payload) {
                 send_to_zbee(node, payload);
+            }
+            else if(message.action == 'network_status'){
+                pubnub.publish({
+                    channel: 'network_def',
+                    message: network
+                })
             }
         }
 });
