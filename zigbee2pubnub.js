@@ -29,13 +29,31 @@ xbeeAPI.on("frame_object", function(frame) {
     if (type == 0x97) {
         console.log("Address:",frame["remote16"]+' '+frame["remote64"]);
         network[frame["remote16"]] = frame["remote64"];
+        pubnub.publish({
+            channel: 'network_def',
+            message: network
+        })
     }
     else if (type == 0x90) {
         var payload = createHexString(frame["data"]);
-        var node = frame["remote16"];
+        var node    = String(frame["remote16"]);
         console.log("sensor:",node);
         console.log("says",payload);
-        pubnub.publish({channel:'' + node,message:{value:payload+''}});
+
+        // outbound stream
+        pubnub.publish({
+            channel: 'outbound',
+            message: {
+                node:    node,
+                payload: payload
+            }
+        });
+
+        // node specific stream (good for node-red)
+        pubnub.publish({
+            channel: 'node-' + node,
+            message: payload
+        });
     }
 });
 
@@ -58,10 +76,18 @@ var send_to_zbee = function(node, payload) {
 pubnub.subscribe({
         channel  : "inbound",
         callback : function(message) {
-            var node = message["node"];
-            var payload = message["payload"];
-            if (node && payload) {
+            var node    = message.node,
+                payload = message.payload,
+                action  = message.action;
+            
+            if (node && payload !== undefined) {
                 send_to_zbee(node, payload);
+            }
+            else if(message.action == 'network_status'){
+                pubnub.publish({
+                    channel: 'network_def',
+                    message: network
+                })
             }
         }
 });
